@@ -1,7 +1,8 @@
 'use strict';
 
-const resizer = require('./resizer')
-module.exports.resizer = async event => {
+const resizer = require('./resizer');
+
+module.exports.resizer = (event, context, callback) => {
     const s3 = event.Records[0].s3;
     console.log(s3);
 
@@ -13,12 +14,11 @@ module.exports.resizer = async event => {
 
     resizer(bucket, key)
         .then(() => {
-            console.log("A thumbnail was created");
-            callback(null, { message: "A thumbnail was created"})
+            console.log(`A thumbnail was created`);
+            callback(null, { message: `A thumbnail was created`})
         })
         .catch(error => {
             console.log(error);
             callback(error);
-        })
-    return { message: message, event };
+        });
 };
