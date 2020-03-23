@@ -78,6 +78,16 @@ functions:
           rules:
             - prefix: uploads/
             - suffix: .jpg
+  thumbnail-logger:
+    handler: handler.thumbnailLogger
+    events:
+      - s3:
+          bucket: learning-serverless-resizer-service-images-wando
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: thumbnails/
+            - suffix: .jpg
+
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

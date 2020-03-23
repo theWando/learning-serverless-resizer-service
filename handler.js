@@ -22,3 +22,14 @@ module.exports.resizer = (event, context, callback) => {
             callback(error);
         });
 };
+
+module.exports.thumbnailLogger = (event, context, callback) => {
+    const s3 = event.Records[0].s3;
+    const bucket = s3.bucket.name
+    const key = s3.object.key;
+
+    const message = `A file named ${key} was put in a bucket ${bucket}`;
+    console.log(message)
+
+    return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
+};
