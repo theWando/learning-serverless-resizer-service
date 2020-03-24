@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jimp": "^0.9.5"
+    "jimp": "^0.9.5",
+    "serverless-pseudo-parameters": "^2.5.0",
+    "serverless-step-functions": "^2.17.2"
   },
   "devDependencies": {
     "aws-sdk": "^2.641.0"

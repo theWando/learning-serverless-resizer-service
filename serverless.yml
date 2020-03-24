@@ -12,6 +12,11 @@
 # Happy Coding!
 
 service: learning-serverless-resizer-service
+
+plugins:
+  - serverless-step-functions
+  - serverless-pseudo-parameters
+
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
 #org: your-org-name
@@ -39,6 +44,11 @@ provider:
         - "s3:GetObject"
         - "s3:PutObject"
       Resource: "arn:aws:s3:::learning-serverless-resizer-service-images-wando/*"
+    - Effect: "Allow"
+      Action:
+        - "states:ListStateMachines"
+        - "states:StartExecution"
+      Resource: "arn:aws:states:*:*:*"
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"
@@ -69,8 +79,8 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  resizer:
-    handler: handler.resizer
+  executeStepFunction:
+    handler: handler.executeStepFunction
     events:
       - s3:
           bucket: learning-serverless-resizer-service-images-wando
@@ -78,6 +88,10 @@ functions:
           rules:
             - prefix: uploads/
             - suffix: .jpg
+  resizer:
+    handler: handler.resizer
+  saveImageMetadata:
+    handler: handler.saveImageMetadata
   thumbnail-logger:
     handler: handler.thumbnailLogger
     events:
@@ -88,7 +102,32 @@ functions:
             - prefix: thumbnails/
             - suffix: .jpg
 
-
+stepFunctions:
+  stateMachines:
+    imageProcessingMachine:
+      definition:
+        Comment: "Image processing state machine"
+        StartAt: Parallel
+        States:
+            Parallel:
+              Type: Parallel
+              Next: FinalState
+              Branches:
+                - StartAt: ResizeImage
+                  States:
+                    ResizeImage:
+                      Type: Task
+                      Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-resizer
+                      End: true
+                - StartAt: SaveImageMetadata
+                  States:
+                    SaveImageMetadata:
+                      Type: Task
+                      Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-saveImageMetadata
+                      End: true
+            FinalState:
+              Type: Pass
+              End: true
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
