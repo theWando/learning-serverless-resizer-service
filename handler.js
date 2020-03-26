@@ -14,7 +14,27 @@ module.exports.resizer = (event, context, callback) => {
     const message = `A file named ${key} was put in a bucket ${bucket}`;
     console.log(message)
 
-    resizer(bucket, key)
+    resizer.resize(bucket, key)
+        .then(() => {
+            console.log(`A thumbnail was created`);
+            callback(null, { message: `A thumbnail was created`})
+        })
+        .catch(error => {
+            console.log(error);
+            callback(error);
+        });
+};
+
+module.exports.blackAndWhiteCrop = (event, context, callback) => {
+    console.log(event);
+
+    const bucket = event.bucketName;
+    const key = event.objectKey;
+
+    const message = `A file named ${key} was put in a bucket ${bucket}`;
+    console.log(message)
+
+    resizer.blackAndWhiteCrop(bucket, key)
         .then(() => {
             console.log(`A thumbnail was created`);
             callback(null, { message: `A thumbnail was created`})
