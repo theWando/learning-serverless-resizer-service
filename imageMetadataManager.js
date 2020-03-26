@@ -22,7 +22,17 @@ module.exports.saveImageMetadata = (bucket, key, isAThumbnail) => {
     };
 
     return dynamo.put(params).promise();
-}
+};
+
+module.exports.updateImageMetadata = (thumbailKey, thumbnailImageId) => {
+    console.log('updateImageMetadata');
+
+    return getImage(getFileName(thumbailKey, false)).then(image => {
+        const newThumbnails = image.thumbnails;
+        newThumbnails.push(thumbnailImageId);
+        return updateImage(image.imageId, newThumbnails)
+    });
+};
 
 function getImage(imageId) {
     const params = {
@@ -66,7 +76,11 @@ function getFileName(key, isAThumbnail) {
     let fileName = textArray[1];
 
     if (isAThumbnail) {
-        fileName = `${fileName}_thumbnail`;
+        fileName = `${fileName}_thumbnail`; // if we have different sizes of thumbnails wecan store them with different names in the resize method
+    }
+
+    if (!isAThumbnail && fileName.indexOf('crop_') >= 0) {
+        fileName = fileName.replace('crop_', '');
     }
 
     console.log(fileName);

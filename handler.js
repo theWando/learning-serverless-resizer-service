@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 const stepFunctions = new AWS.StepFunctions();
 
 const resizer = require('./resizer');
-const imageMetadataManager = require('./imageMetadataManager')
+const imageMetadataManager = require('./imageMetadataManager');
 
 module.exports.resizer = (event, context, callback) => {
     console.log(event);
@@ -104,6 +104,25 @@ module.exports.executeStepFunction = (event, context, callback) => {
         .catch(error => {
             return context.fail(error);
         });
+}
+
+module.exports.updateImageMetadata = (event, context, callback) => {
+    console.log('updateImageMetadata');
+
+    const eventData = event.Records[0];
+    console.log(eventData);
+
+    if (eventData.eventName === 'INSERT') {
+        if (eventData.dynamodb.NewImage.isAThumbnail.BOOL) {
+            const image = eventData.dynamodb.NewImage;
+
+            imageMetadataManager.updateImageMetadata(image.key.S, image.imageId.S).then(() => {
+                console.log('Image updated');
+                callback(null, null);
+            });
+        }
+    }
+    callback(null, null);
 }
 
 function saveImageMetadata(bucket, key, isAThumbnail = false) {
