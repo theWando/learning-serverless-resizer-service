@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 const stepFunctions = new AWS.StepFunctions();
 
 const resizer = require('./resizer');
+const imageMetadataManager = require('./imageMetadataManager')
 
 module.exports.resizer = (event, context, callback) => {
     console.log(event);
@@ -17,6 +18,7 @@ module.exports.resizer = (event, context, callback) => {
     resizer.resize(bucket, key)
         .then(() => {
             console.log(`A thumbnail was created`);
+            saveImageMetadata(bucket, key, true);
             callback(null, { message: `A thumbnail was created`})
         })
         .catch(error => {
@@ -53,7 +55,8 @@ module.exports.saveImageMetadata = (event, context, callback) => {
     const key = event.objectKey;
 
     console.log('saveImageMetadata was called');
-    //TODO
+
+    saveImageMetadata(bucket, key);
 }
 module.exports.thumbnailLogger = (event, context, callback) => {
     const s3 = event.Records[0].s3;
@@ -101,4 +104,17 @@ module.exports.executeStepFunction = (event, context, callback) => {
         .catch(error => {
             return context.fail(error);
         });
+}
+
+function saveImageMetadata(bucket, key, isAThumbnail = false) {
+    imageMetadataManager
+        .saveImageMetadata(bucket, key, isAThumbnail)
+        .then(() => {
+            console.log('saveImageMetadata was completed');
+            callback(null, null);
+        })
+        .catch(error => {
+            console.log(error);
+            callback(null, null);
+        })
 }

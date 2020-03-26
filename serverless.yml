@@ -17,6 +17,10 @@ plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
 
+custom:
+  settings:
+    IMAGES_DYNAMODB_TABLE: images-metadata
+
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
 #org: your-org-name
@@ -32,6 +36,7 @@ provider:
   region: us-east-1
   timeout: 15
   memorySize: 2000
+  environment: ${self:custom.settings}
 
 # you can overwrite defaults here
 #  stage: dev
@@ -49,6 +54,15 @@ provider:
         - "states:ListStateMachines"
         - "states:StartExecution"
       Resource: "arn:aws:states:*:*:*"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:Scan"
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.IMAGES_DYNAMODB_TABLE}"
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"
@@ -187,3 +201,19 @@ stepFunctions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+resources:
+  Resources:
+    ImagesTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "imageId"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "imageId"
+          KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.IMAGES_DYNAMODB_TABLE}
