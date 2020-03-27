@@ -125,6 +125,35 @@ module.exports.updateImageMetadata = (event, context, callback) => {
     callback(null, null);
 }
 
+module.exports.getImageMetadata = (event, context, callback) => {
+    console.log('getImageMetadata');
+
+    console.log(event);
+
+    const imageId = event.pathParameters && event.pathParameters.imageId;
+
+    imageMetadataManager.getImageMetadata(imageId)
+        .then(imageMetadata => {
+           const response = {
+               statusCode: 200,
+               body: JSON.stringify({
+                   message: imageMetadata
+               })
+           };
+           callback(null, response);
+        })
+        .catch(error => {
+            const response = {
+                statusCode: 400,
+                body: JSON.stringify({
+                    message: 'There was an error when fetching the metadata'
+                })
+            };
+
+            callback(null, response);
+        });
+}
+
 function saveImageMetadata(bucket, key, isAThumbnail = false) {
     imageMetadataManager
         .saveImageMetadata(bucket, key, isAThumbnail)

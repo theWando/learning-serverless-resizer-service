@@ -34,6 +34,10 @@ module.exports.updateImageMetadata = (thumbailKey, thumbnailImageId) => {
     });
 };
 
+module.exports.getImageMetadata = (imageId) => {
+    return getImage(imageId);
+};
+
 function getImage(imageId) {
     const params = {
         Key: {

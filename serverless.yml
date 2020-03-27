@@ -129,6 +129,12 @@ functions:
             Fn::GetAtt:
               - ImagesTable
               - StreamArn
+  getImageMetadata:
+    handler: handler.getImageMetadata
+    events:
+      - http:
+          path: /image/{imageId}
+          method: get
 
 stepFunctions:
   stateMachines:
