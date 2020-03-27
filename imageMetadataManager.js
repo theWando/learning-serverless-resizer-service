@@ -38,10 +38,33 @@ module.exports.getImageMetadata = (imageId) => {
     return getImage(imageId);
 };
 
+module.exports.getThumbnailMetadataFromImage = (imageId) => {
+    return getImage(imageId+'_thumbnail');
+};
+
 function getImage(imageId) {
     const params = {
         Key: {
             imageId: imageId
+        },
+        TableName: process.env.IMAGES_DYNAMODB_TABLE
+    };
+
+    console.log(params);
+
+    return dynamo.get(params).promise().then(response => {
+        return response.Item;
+    });
+}
+
+function getThumbnailFromImage(imageId) {
+    const params = {
+        Key: {
+            isAThumbnail: true
+        },
+        KeyConditions: {
+            ComparisonOperator: 'CONTAINS',
+            S: imageId
         },
         TableName: process.env.IMAGES_DYNAMODB_TABLE
     };

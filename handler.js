@@ -134,24 +134,31 @@ module.exports.getImageMetadata = (event, context, callback) => {
 
     imageMetadataManager.getImageMetadata(imageId)
         .then(imageMetadata => {
-           const response = {
-               statusCode: 200,
-               body: JSON.stringify({
-                   message: imageMetadata
-               })
-           };
-           callback(null, response);
+            sendResponse(200, { message: imageMetadata }, callback);
         })
         .catch(error => {
-            const response = {
-                statusCode: 400,
-                body: JSON.stringify({
-                    message: 'There was an error when fetching the metadata'
-                })
-            };
-
-            callback(null, response);
+            sendResponse(400, { message: 'There was an error when fetching the metadata' }, callback)
         });
+}
+
+module.exports.getThumbnailMetadata = (event, context, callback) => {
+    console.log('getThumbnailMetadata');
+
+    const imageId = event.pathParameters && event.pathParameters.imageId;
+    imageMetadataManager.getThumbnailMetadataFromImage(imageId)
+        .then(thumbnailMetadata => sendResponse(200, { message: thumbnailMetadata }, callback))
+        .catch(error => {
+            console.log(error);
+            sendResponse(400, { message: 'There was an error when fetching the metadata' }, callback)
+        });
+};
+
+function sendResponse(statusCode, message, callback) {
+    const response = {
+        statusCode: statusCode,
+        body: JSON.stringify(message)
+    }
+    callback(null, response);
 }
 
 function saveImageMetadata(bucket, key, isAThumbnail = false) {
