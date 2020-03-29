@@ -5,6 +5,7 @@ const stepFunctions = new AWS.StepFunctions();
 
 const resizer = require('./resizer');
 const imageMetadataManager = require('./imageMetadataManager');
+const {sendResponse} = require("./utils");
 
 module.exports.resizer = (event, context, callback) => {
     console.log(event);
@@ -152,14 +153,6 @@ module.exports.getThumbnailMetadata = (event, context, callback) => {
             sendResponse(400, { message: 'There was an error when fetching the metadata' }, callback)
         });
 };
-
-function sendResponse(statusCode, message, callback) {
-    const response = {
-        statusCode: statusCode,
-        body: JSON.stringify(message)
-    }
-    callback(null, response);
-}
 
 function saveImageMetadata(bucket, key, isAThumbnail = false) {
     imageMetadataManager

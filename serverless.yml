@@ -20,6 +20,7 @@ plugins:
 custom:
   settings:
     IMAGES_DYNAMODB_TABLE: images-metadata
+    SECRET_KEY: ${ssm:learning-serverless-secret-token}
 
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
@@ -37,6 +38,16 @@ provider:
   timeout: 15
   memorySize: 2000
   environment: ${self:custom.settings}
+  apiKeys:
+    - learning-serverless-api-key
+  usagePlan:
+    quota:
+      limit: 100
+      offset: 0
+      period: DAY
+    throrrle:
+      burstLimit: 10
+      rateLimit: 10
 
 # you can overwrite defaults here
 #  stage: dev
@@ -135,12 +146,22 @@ functions:
       - http:
           path: /image/{imageId}
           method: get
+          authorizer: authorize
   getThumbnailMetadata:
     handler: handler.getThumbnailMetadata
     events:
       - http:
           path: /thumbnail/{imageId}/
           method: get
+  generateToken:
+    handler: authorizationHandler.generateToken
+    events:
+      - http:
+          path: register
+          method: post
+          private: true
+  authorize:
+    handler: authorizationHandler.authorize
 
 stepFunctions:
   stateMachines:
