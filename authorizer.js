@@ -19,7 +19,7 @@ module.exports.generateToken = jsonToSign => {
 };
 
 function validateAppIdAndSecret(json) {
-    console.log(json)
+    console.log(`json: ${json}`)
     const hasValidAppId = json.applicationId && json.applicationId === APPLICATION_ID;
 
     const hasValidSecret = json.applicationSecret && json.applicationSecret === APPLICATION_SECRET;

@@ -5,9 +5,9 @@ const {sendResponse} = require("./utils");
 
 module.exports.generateToken = (event, context, callback) => {
     console.log('generateToken was called');
+    console.log(`event: ${JSON.stringify(event)}`);
 
-    const token = authorizer.generateToken(event.body || {});
-    console.log(event)
+    const token = authorizer.generateToken(JSON.parse(event.body || {}));
     sendResponse(200, { token }, callback);
 };
 
