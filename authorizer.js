@@ -58,6 +58,7 @@ function buildPolicy(principalId, effect, resource) {
         };
         authResponse.policyDocument = policyDocument;
     }
+    return authResponse;
 }
 
 module.exports.generatePolicy = (token, methodArn) => {
