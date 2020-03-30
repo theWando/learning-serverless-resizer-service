@@ -16,11 +16,17 @@ service: learning-serverless-resizer-service
 plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
+  - serverless-offline
+  - serverless-dynamodb-local
 
 custom:
   settings:
     IMAGES_DYNAMODB_TABLE: images-metadata
+    APPS_ID_DYNAMODB_TABLE: applications-credentials
     SECRET_KEY: ${ssm:learning-serverless-secret-token}
+  dynamodb:
+    stages:
+      - ${self:provider.stage}
 
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
@@ -75,6 +81,7 @@ provider:
         - "dynamodb:ListStream"
       Resource:
         - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.IMAGES_DYNAMODB_TABLE}"
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.APPS_ID_DYNAMODB_TABLE}"
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
 #    - Effect: "Allow"
@@ -153,6 +160,7 @@ functions:
       - http:
           path: /thumbnail/{imageId}/
           method: get
+          authorizer: authorize
   generateToken:
     handler: authorizationHandler.generateToken
     events:
@@ -162,6 +170,13 @@ functions:
           private: true
   authorize:
     handler: authorizationHandler.authorize
+  appCredentialsHandler:
+    handler: appCredentialsHandler.create
+    events:
+      - http:
+          path: /register/application/
+          method: post
+          authorizer: authorize
 
 stepFunctions:
   stateMachines:
@@ -264,3 +279,16 @@ resources:
         TableName: ${self:custom.settings.IMAGES_DYNAMODB_TABLE}
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+    ApplicationsTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "applicationId"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "applicationId"
+          KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.APPS_ID_DYNAMODB_TABLE}
