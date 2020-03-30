@@ -20,3 +20,26 @@ module.exports.create = (credentials) => {
 
     return dynamo.put(params).promise();
 };
+
+module.exports.getCredentials = (id, secret) => {
+    console.log('getCredentials called');
+
+    const params = {
+        Key: {
+            applicationId: id
+        },
+        TableName: table
+    };
+
+    console.log(params);
+
+    return dynamo.get(params).promise()
+        .then(response => {
+            console.log(`response: ${JSON.stringify(response)}`)
+            return response.Item;
+        })
+        .catch(error => {
+            console.log('error');
+            console.log(error);
+        });
+};
